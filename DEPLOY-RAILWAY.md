@@ -24,7 +24,7 @@ git add .
 git commit -m "Initial commit - URL Shortener"
 
 # Create repo on GitHub, then:
-git remote add origin https://github.com/YOUR_USERNAME/url-shortener.git
+git remote add origin https://github.com/theakinwande/url-shortener.git
 git branch -M main
 git push -u origin main
 ```

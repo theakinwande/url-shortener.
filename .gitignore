@@ -1,0 +1,65 @@
+# ===========================================
+# Git Ignore
+# ===========================================
+# Files and directories to exclude from version control.
+# IMPORTANT: Never commit secrets!
+
+# ===========================================
+# Environment & Secrets
+# ===========================================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# ===========================================
+# Go Build Artifacts
+# ===========================================
+# Binary
+/server
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Go coverage
+*.out
+coverage.html
+
+# Dependency directories (if using vendor)
+/vendor/
+
+# ===========================================
+# IDE & Editor
+# ===========================================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ===========================================
+# Docker
+# ===========================================
+# Don't ignore docker-compose.yml (it's not secret)
+# But ignore override files that might have local config
+docker-compose.override.yml
+
+# ===========================================
+# Logs
+# ===========================================
+*.log
+logs/
+
+# ===========================================
+# Temporary Files
+# ===========================================
+tmp/
+temp/
+*.tmp

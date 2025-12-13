@@ -1,0 +1,107 @@
+# ===========================================
+# Docker Compose for URL Shortener
+# ===========================================
+# This file orchestrates multiple containers:
+# - PostgreSQL: Persistent data storage
+# - Redis: In-memory cache & rate limiting
+# 
+# WHY DOCKER COMPOSE?
+# Instead of manually installing PostgreSQL and Redis,
+# Docker Compose spins up isolated containers with one command.
+# This ensures consistent environments across dev/prod.
+# ===========================================
+
+services:
+  # ===========================================
+  # PostgreSQL - The Source of Truth
+  # ===========================================
+  # All URL data lives here permanently.
+  # Even if Redis crashes, data is safe in Postgres.
+  postgres:
+    image: postgres:15-alpine  # Alpine = smaller image size
+    container_name: shortener_postgres
+    restart: unless-stopped    # Auto-restart on crash
+    environment:
+      # SECURITY NOTE: In production, use secrets management
+      # (Docker secrets, Vault, etc.) instead of plain text
+      POSTGRES_USER: shortener
+      POSTGRES_PASSWORD: shortener_secret_password
+      POSTGRES_DB: shortener
+    ports:
+      - "5433:5432"  # Host:Container - using 5433 to avoid conflict with local PostgreSQL
+    volumes:
+      # Named volume persists data even if container is removed
+      # Without this, data is lost when container stops!
+      - postgres_data:/var/lib/postgresql/data
+      # Mount init scripts - runs on first container start only
+      - ./migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      # Docker checks if Postgres is actually ready
+      # Other services can wait for this before starting
+      test: ["CMD-SHELL", "pg_isready -U shortener"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================
+  # Redis - The Speed Layer
+  # ===========================================
+  # In-memory data store. Blazingly fast.
+  # Used for:
+  # 1. Caching hot URLs (avoid DB queries)
+  # 2. Rate limiting counters
+  # 3. Distributed locks (future feature)
+  redis:
+    image: redis:7-alpine
+    container_name: shortener_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      # Redis can persist data to disk (AOF = Append Only File)
+      # This means cache survives restarts
+      - redis_data:/data
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 100mb
+      --maxmemory-policy allkeys-lru
+    # EXPLANATION:
+    # --appendonly yes    : Persist every write to disk
+    # --maxmemory 100mb   : Limit memory usage
+    # --maxmemory-policy  : When full, evict Least Recently Used keys
+    #                       This is perfect for caching!
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+# ===========================================
+# Named Volumes
+# ===========================================
+# These persist independently of containers.
+# `docker-compose down` keeps them.
+# `docker-compose down -v` removes them (careful!).
+volumes:
+  postgres_data:
+  redis_data:
+
+# ===========================================
+# USAGE:
+# ===========================================
+# Start all services:
+#   docker-compose up -d
+#
+# View logs:
+#   docker-compose logs -f
+#
+# Stop services:
+#   docker-compose down
+#
+# Stop and remove data:
+#   docker-compose down -v
+#
+# Rebuild after changes:
+#   docker-compose up -d --build
+# ===========================================

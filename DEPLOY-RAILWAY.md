@@ -74,40 +74,9 @@ Add these variables:
 
 ---
 
-## Step 6: Update DATABASE_URL Format
+## Step 6: Run Database Migrations
 
-Railway's PostgreSQL URL uses this format:
-
-```
-postgresql://user:pass@host:port/db
-```
-
-But our app expects:
-
-```
-postgres://user:pass@host:port/db?sslmode=require
-```
-
-Add a custom variable or update in code. The simplest fix is to use Railway's reference variable directly - it should work.
-
----
-
-## Step 7: Run Database Migrations
-
-Railway doesn't auto-run migrations. You have two options:
-
-### Option A: Add to Dockerfile (Recommended)
-
-Add this to your Dockerfile before the `CMD` line:
-
-```dockerfile
-# Copy migrations
-COPY migrations /app/migrations
-```
-
-Then modify your Go code to run migrations on startup, OR:
-
-### Option B: Run Manually via Railway CLI
+Railway doesn't auto-run migrations. Use Railway CLI:
 
 ```bash
 # Install Railway CLI
@@ -116,14 +85,17 @@ npm install -g @railway/cli
 # Login
 railway login
 
-# Run psql against your Railway Postgres
+# Link to your project
+railway link
+
+# Run migrations
 railway run psql $DATABASE_URL -f migrations/001_create_urls.sql
 railway run psql $DATABASE_URL -f migrations/002_create_api_keys.sql
 ```
 
 ---
 
-## Step 8: Deploy!
+## Step 7: Deploy!
 
 Railway auto-deploys when you push to GitHub. Check the **Deployments** tab for logs.
 
@@ -135,7 +107,7 @@ https://YOUR-APP-NAME.up.railway.app
 
 ---
 
-## Step 9: Create Your First API Key
+## Step 8: Create Your First API Key
 
 Use Railway's CLI to connect to PostgreSQL:
 
@@ -153,9 +125,11 @@ INSERT INTO api_keys (key_hash, name, rate_limit) VALUES (
 );
 ```
 
+This creates an API key where `123` is the secret.
+
 ---
 
-## Step 10: Set Up Custom Domain (Optional)
+## Step 9: Set Up Custom Domain (Optional)
 
 1. In Railway, go to your app's **Settings**
 2. Click **"Generate Domain"** or add a **Custom Domain**
@@ -186,30 +160,3 @@ curl -X POST https://YOUR-APP.up.railway.app/api/shorten \
 - **Redis**: ~$5/month
 
 Total for a small production setup: **~$15/month**
-
----
-
-## Troubleshooting
-
-### App won't start
-
-- Check the **Deployments** logs in Railway
-- Make sure all environment variables are set
-- Verify DATABASE_URL and REDIS_URL are correct
-
-### Database connection fails
-
-- Ensure PostgreSQL addon is added
-- Check if `sslmode=require` is needed (Railway requires SSL)
-
-### Port binding error
-
-- Make sure `PORT` is set to `${{PORT}}` (Railway assigns dynamically)
-
----
-
-## Next Steps
-
-1. Set up a custom domain (e.g., `short.yourdomain.com`)
-2. Create a proper API key with a secure secret
-3. Set up monitoring with Railway's built-in metrics

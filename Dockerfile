@@ -20,7 +20,7 @@
 # Stage 1: Builder
 # ===========================================
 # Start with official Go image
-FROM golang:1.21-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 # Install build dependencies
 # - git: for `go mod download` (some deps use git)

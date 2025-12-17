@@ -107,6 +107,7 @@ func main() {
 	// They depend on services.
 	urlHandler := handler.NewURLHandler(urlService)
 	healthHandler := handler.NewHealthHandler(postgres, redis, Version)
+	homeHandler := handler.NewHomeHandler(cfg.Shortener.BaseURL)
 
 	// ===========================================
 	// Step 7: Initialize Middleware
@@ -141,6 +142,11 @@ func main() {
 
 	// 4. CORS - allow cross-origin requests
 	router.Use(middleware.CORS(middleware.DefaultCORSConfig()))
+
+	// ===========================================
+	// Homepage Route
+	// ===========================================
+	router.GET("/", homeHandler.Home)
 
 	// ===========================================
 	// Health Check Routes (no auth required)

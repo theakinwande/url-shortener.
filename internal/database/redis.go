@@ -46,11 +46,19 @@ func NewRedisDB(ctx context.Context, cfg config.RedisConfig) (*RedisDB, error) {
 		return nil, fmt.Errorf("failed to parse Redis URL: %w", err)
 	}
 
-	// Apply additional configuration
-	opt.Password = cfg.Password
-	opt.DB = cfg.DB
-	opt.PoolSize = cfg.PoolSize
-	opt.MinIdleConns = cfg.MinIdleConns
+	// Apply additional configuration (only if set, don't overwrite URL values)
+	if cfg.Password != "" {
+		opt.Password = cfg.Password
+	}
+	if cfg.DB != 0 {
+		opt.DB = cfg.DB
+	}
+	if cfg.PoolSize > 0 {
+		opt.PoolSize = cfg.PoolSize
+	}
+	if cfg.MinIdleConns > 0 {
+		opt.MinIdleConns = cfg.MinIdleConns
+	}
 
 	// Connection timeouts prevent hanging
 	opt.DialTimeout = 5 * time.Second

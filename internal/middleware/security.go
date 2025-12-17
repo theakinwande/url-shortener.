@@ -55,10 +55,10 @@ func SecurityHeaders() gin.HandlerFunc {
 		// Content Security Policy (CSP)
 		// ===========================================
 		// Restricts what resources can be loaded.
-		// For an API, we want minimal permissions.
-		// default-src 'none' = block everything by default
-		// frame-ancestors 'none' = no embedding (like X-Frame-Options)
-		c.Header("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'")
+		// We allow inline styles and scripts for the homepage.
+		// 'self' = allow resources from same origin
+		// 'unsafe-inline' = allow inline styles/scripts (needed for homepage)
+		c.Header("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none'")
 
 		// ===========================================
 		// Strict Transport Security (HSTS)
